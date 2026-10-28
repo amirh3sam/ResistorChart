@@ -20,13 +20,16 @@ import {
   nearestStandard,
   parseResistance,
 } from "@/lib/resistor";
+import { calculateLed, formatRating } from "@/lib/led";
 import { decodeSmdCode } from "@/lib/smd";
 import { type SmdMode, SmdChip, SmdPanel } from "./smd-panel";
+import { type LedState, LedGlyph, LedPanel, ledHex } from "./led-panel";
+import { ResistorSvg } from "./resistor-svg";
 import { ThemeToggle } from "./theme-toggle";
 import { FieldLabel, Segmented, Stat, TextField } from "./ui";
 
 type Mode = "colors" | "value";
-type Tab = "bands" | "smd";
+type Tab = "bands" | "smd" | "led";
 
 const DEFAULT_TEMPCO: ColorName = "brown";
 
@@ -53,6 +56,7 @@ export default function Home() {
   const [activeBand, setActiveBand] = useState(0);
   const [valueInput, setValueInput] = useState("4.7k");
   const [tab, setTab] = useState<Tab>("bands");
+  const [led, setLed] = useState<LedState>({ supply: "5", vf: "2", current: "20", count: 1, series: "E12", color: "Red" });
   const [smdMode, setSmdMode] = useState<SmdMode>("code");
   const [smdCode, setSmdCode] = useState("103");
   const [smdValue, setSmdValue] = useState("10k");
@@ -97,6 +101,13 @@ export default function Home() {
     setValueInput(shortOhms(ohms));
   }
 
+  function openInBands(ohms: number) {
+    setTab("bands");
+    setMode("colors");
+    applyValue(ohms);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   function switchMode(next: Mode) {
     if (next === "value") setValueInput(shortOhms(result.ohms));
     setMode(next);
@@ -104,8 +115,22 @@ export default function Home() {
 
   const smdDecoded = decodeSmdCode(smdCode);
   const smdValueOhms = parseResistance(smdValue);
+  const ledResult = calculateLed({
+    supply: Number(led.supply),
+    vf: Number(led.vf),
+    current: Number(led.current) / 1000,
+    count: led.count,
+    series: led.series,
+  });
+
   let header: { visual: ReactNode; value: string; tolerance: string | null };
-  if (tab === "bands") {
+  if (tab === "led") {
+    header = {
+      visual: <LedGlyph hex={ledHex(led)} />,
+      value: ledResult.ok ? formatOhms(ledResult.ohms) : "—",
+      tolerance: ledResult.ok && ledResult.rating ? formatRating(ledResult.rating) : null,
+    };
+  } else if (tab === "bands") {
     header = {
       visual: <ResistorSvg bands={bands} count={count} activeBand={-1} compact />,
       value: formatOhms(result.ohms),
@@ -132,13 +157,16 @@ export default function Home() {
           variant="primary"
           value={tab}
           options={[
-            { value: "bands", label: <><BandsIcon />Color Bands</> },
-            { value: "smd", label: <><ChipIcon />SMD Code</> },
+            { value: "bands", label: <><BandsIcon />Bands</> },
+            { value: "smd", label: <><ChipIcon />SMD</> },
+            { value: "led", label: <><LedIcon />LED</> },
           ]}
           onChange={setTab}
         />
 
-        {tab === "smd" ? (
+        {tab === "led" ? (
+          <LedPanel state={led} onChange={(patch) => setLed((s) => ({ ...s, ...patch }))} result={ledResult} onOpenInBands={openInBands} />
+        ) : tab === "smd" ? (
           <SmdPanel
             mode={smdMode}
             onMode={setSmdMode}
@@ -601,86 +629,6 @@ function ReferenceChart() {
   );
 }
 
-/* ------------------------------------------------------------------ */
-
-const BODY_PATH =
-  "M80 20C62 20 60 22 60 40V80C60 98 62 100 80 100H104C116 100 118 90 130 90H270C282 90 284 100 296 100H320C338 100 340 98 340 80V40C340 22 338 20 320 20H296C284 20 282 30 270 30H130C118 30 116 20 104 20Z";
-
-// Band centers; the tolerance band sits apart so the reading direction is clear.
-const BAND_X: Record<BandCount, number[]> = {
-  4: [100, 150, 190, 302],
-  5: [96, 140, 174, 208, 302],
-  6: [92, 134, 164, 194, 244, 308],
-};
-
-function ResistorSvg({
-  bands,
-  count,
-  activeBand,
-  onBandClick,
-  compact,
-}: {
-  bands: ColorName[];
-  count: BandCount;
-  activeBand: number;
-  onBandClick?: (i: number) => void;
-  compact?: boolean;
-}) {
-  // Carbon film (4-band) resistors are usually beige; metal film (5/6-band) blue.
-  const body = count === 4 ? "#d8bf8f" : "#7fb3dd";
-  const xs = BAND_X[count];
-  const id = compact ? "rc" : "rf";
-  return (
-    <svg viewBox={compact ? "50 10 300 100" : "0 0 400 124"} className="block h-auto w-full" role="img" aria-label="Resistor color bands">
-      <defs>
-        <clipPath id={`${id}-clip`}>
-          <path d={BODY_PATH} />
-        </clipPath>
-        <linearGradient id={`${id}-shade`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#fff" stopOpacity="0.45" />
-          <stop offset="0.35" stopColor="#fff" stopOpacity="0.05" />
-          <stop offset="0.7" stopColor="#000" stopOpacity="0.1" />
-          <stop offset="1" stopColor="#000" stopOpacity="0.4" />
-        </linearGradient>
-        <linearGradient id={`${id}-lead`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#e4e6ea" />
-          <stop offset="0.5" stopColor="#a9adb5" />
-          <stop offset="1" stopColor="#6c7079" />
-        </linearGradient>
-      </defs>
-      <rect x={compact ? 50 : 4} y="56" width={compact ? 300 : 392} height="8" rx="4" fill={`url(#${id}-lead)`} />
-      <g clipPath={`url(#${id}-clip)`}>
-        <path d={BODY_PATH} fill={body} />
-        {xs.map((x, i) =>
-          bands[i] === "none" ? null : (
-            <rect key={i} x={x - 9} y="10" width="18" height="100" fill={COLORS[bands[i]].hex} className="transition-[fill] duration-300" />
-          ),
-        )}
-        <rect x="50" y="10" width="300" height="100" fill={`url(#${id}-shade)`} />
-      </g>
-      <path d={BODY_PATH} fill="none" stroke="#000" strokeOpacity="0.25" strokeWidth="1.5" />
-      {!compact &&
-        xs.map((x, i) => (
-          <g key={i}>
-            {activeBand === i && <path d={`M${x - 8} 120 L${x} 110 L${x + 8} 120 Z`} fill="var(--accent)" />}
-            {onBandClick && (
-              <rect
-                x={x - 16}
-                y="10"
-                width="32"
-                height="112"
-                fill="transparent"
-                className="cursor-pointer"
-                onClick={() => onBandClick(i)}
-                aria-label={`Edit band ${i + 1}`}
-              />
-            )}
-          </g>
-        ))}
-    </svg>
-  );
-}
-
 function BandsIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="h-4 w-4" aria-hidden>
@@ -696,6 +644,15 @@ function ChipIcon() {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" className="h-4 w-4" aria-hidden>
       <rect x="6" y="7" width="12" height="10" rx="1" />
       <path d="M3 9h3v6H3zM18 9h3v6h-3z" />
+    </svg>
+  );
+}
+
+function LedIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden>
+      <path d="M8 20v-9a4 4 0 0 1 8 0v9M6 20h12M10 20v3M14 20v3" />
+      <path d="M4 6 2.5 4.5M20 6l1.5-1.5M12 3V1" />
     </svg>
   );
 }
