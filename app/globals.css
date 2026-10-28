@@ -1,7 +1,9 @@
 @import "tailwindcss";
 
-/* Dark-first palette; light mode kicks in only when the OS asks for it. */
-:root {
+/* Theme: an inline script in layout.tsx sets data-theme="light|dark" before paint,
+   from the saved choice or the OS setting. The media query is the no-JS fallback. */
+:root,
+:root[data-theme="dark"] {
   --bg: #0b0d12;
   --surface: #151922;
   --surface-2: #1d2230;
@@ -17,15 +19,30 @@
   color-scheme: dark;
 }
 
+:root[data-theme="light"] {
+  --bg: #f3f4f7;
+  --surface: #ffffff;
+  --surface-2: #eceef3;
+  --border: #d8dce5;
+  --fg: #11141b;
+  --muted: #5d6576;
+  --accent: #b45309;
+  --accent-fg: #ffffff;
+  --danger: #c62828;
+  --field: #fffdf5;
+  --field-shadow: inset 0 2px 6px rgb(0 0 0 / 0.08);
+  color-scheme: light;
+}
+
 @media (prefers-color-scheme: light) {
-  :root {
+  :root:not([data-theme]) {
     --bg: #f3f4f7;
     --surface: #ffffff;
     --surface-2: #eceef3;
     --border: #d8dce5;
     --fg: #11141b;
     --muted: #5d6576;
-    --accent: #c98a00;
+    --accent: #b45309;
     --accent-fg: #ffffff;
     --danger: #c62828;
     --field: #fffdf5;
@@ -33,6 +50,8 @@
     color-scheme: light;
   }
 }
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 @theme inline {
   --color-bg: var(--bg);
@@ -74,4 +93,15 @@ body {
 }
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Smooth color change when the theme is toggled. */
+.theme-transition,
+.theme-transition * {
+  transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease !important;
 }

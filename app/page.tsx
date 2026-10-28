@@ -22,6 +22,7 @@ import {
 } from "@/lib/resistor";
 import { decodeSmdCode } from "@/lib/smd";
 import { type SmdMode, SmdChip, SmdPanel } from "./smd-panel";
+import { ThemeToggle } from "./theme-toggle";
 import { FieldLabel, Segmented, Stat, TextField } from "./ui";
 
 type Mode = "colors" | "value";
@@ -128,10 +129,11 @@ export default function Home() {
       <main className="flex flex-col gap-4 px-4 pt-4 pb-[calc(2rem+env(safe-area-inset-bottom))]">
         <Segmented
           label="Resistor type"
+          variant="primary"
           value={tab}
           options={[
-            { value: "bands", label: "Color Bands" },
-            { value: "smd", label: "SMD Code" },
+            { value: "bands", label: <><BandsIcon />Color Bands</> },
+            { value: "smd", label: <><ChipIcon />SMD Code</> },
           ]}
           onChange={setTab}
         />
@@ -189,7 +191,7 @@ export default function Home() {
           {mode === "colors" ? (
             <section className="rounded-3xl border border-border bg-surface p-4">
               <div className="mb-2">
-                <FieldLabel text="Choose a band, then its color" kind="pick" />
+                <FieldLabel text="Pick band, then color" kind="pick" />
               </div>
               <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1" role="tablist" aria-label="Bands">
                 {specs.map((s, i) => (
@@ -255,11 +257,12 @@ function StickyResult({ visual, value, tolerance }: { visual: ReactNode; value: 
           {visual}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-[11px] font-medium uppercase tracking-widest text-muted">Resistance</p>
+          <h1 className="text-[11px] font-medium uppercase tracking-widest text-muted">Resistor Calculator</h1>
           <p className="truncate text-2xl font-bold tabular-nums" aria-live="polite">
             {value} {tolerance && <span className="text-base font-semibold text-accent">{tolerance}</span>}
           </p>
         </div>
+        <ThemeToggle />
       </div>
     </header>
   );
@@ -305,7 +308,7 @@ function ColorPalette({ role, selected, onSelect }: { role: BandRole; selected: 
             onClick={() => onSelect(c)}
             aria-pressed={isSel}
             className={`relative flex min-h-16 flex-col items-center justify-center rounded-2xl border-2 px-1 py-2 text-center transition active:scale-95 ${
-              isSel ? "border-accent" : "border-transparent"
+              isSel ? "border-accent" : "border-black/10 dark:border-white/10"
             }`}
             style={
               c === "none"
@@ -537,7 +540,7 @@ function ESeriesPanel({ ohms, onPick }: { ohms: number; onPick: (v: number) => v
                 key={v}
                 onClick={() => onPick(value)}
                 className={`min-h-12 rounded-xl border text-sm font-semibold tabular-nums transition active:scale-95 ${
-                  active ? "border-accent bg-accent text-accent-fg" : "border-border bg-surface-2"
+                  active ? "border-accent bg-accent/15 text-fg ring-1 ring-accent" : "border-border bg-surface-2"
                 }`}
               >
                 {shortOhms(value)}
@@ -674,6 +677,25 @@ function ResistorSvg({
             )}
           </g>
         ))}
+    </svg>
+  );
+}
+
+function BandsIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="h-4 w-4" aria-hidden>
+      <path d="M2 12h3M19 12h3" />
+      <rect x="5" y="7" width="14" height="10" rx="3" />
+      <path d="M9 7v10M12 7v10M16 7v10" />
+    </svg>
+  );
+}
+
+function ChipIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" className="h-4 w-4" aria-hidden>
+      <rect x="6" y="7" width="12" height="10" rx="1" />
+      <path d="M3 9h3v6H3zM18 9h3v6h-3z" />
     </svg>
   );
 }

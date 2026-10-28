@@ -2,32 +2,55 @@
 
 import type { InputHTMLAttributes, ReactNode } from "react";
 
+/**
+ * Segmented switch. "primary" (accent fill) is reserved for the top-level
+ * Color Bands / SMD choice; everything else uses the quieter "secondary" look
+ * so only one control on screen shouts.
+ */
 export function Segmented<T extends string | number>({
   label,
   value,
   options,
   onChange,
+  variant = "secondary",
 }: {
   label: string;
   value: T;
-  options: { value: T; label: string }[];
+  options: { value: T; label: ReactNode }[];
   onChange: (v: T) => void;
+  variant?: "primary" | "secondary";
 }) {
+  const primary = variant === "primary";
   return (
-    <div role="radiogroup" aria-label={label} className="grid auto-cols-fr grid-flow-col gap-1 rounded-2xl border border-border bg-surface p-1">
-      {options.map((o) => (
-        <button
-          key={String(o.value)}
-          role="radio"
-          aria-checked={value === o.value}
-          onClick={() => onChange(o.value)}
-          className={`min-h-12 rounded-xl px-2 text-sm font-semibold transition active:scale-[0.98] ${
-            value === o.value ? "bg-accent text-accent-fg shadow" : "text-muted hover:text-fg"
-          }`}
-        >
-          {o.label}
-        </button>
-      ))}
+    <div
+      role="radiogroup"
+      aria-label={label}
+      className={`grid auto-cols-fr grid-flow-col gap-1 border border-border p-1 ${
+        primary ? "rounded-2xl bg-surface" : "rounded-xl bg-surface-2/60"
+      }`}
+    >
+      {options.map((o) => {
+        const on = value === o.value;
+        return (
+          <button
+            key={String(o.value)}
+            role="radio"
+            aria-checked={on}
+            onClick={() => onChange(o.value)}
+            className={`flex items-center justify-center gap-2 px-2 text-sm font-semibold transition active:scale-[0.98] ${
+              primary ? "min-h-12 rounded-xl" : "min-h-11 rounded-lg"
+            } ${
+              on
+                ? primary
+                  ? "bg-accent text-accent-fg shadow"
+                  : "bg-surface text-fg shadow ring-1 ring-border"
+                : "text-muted hover:text-fg"
+            }`}
+          >
+            {o.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
