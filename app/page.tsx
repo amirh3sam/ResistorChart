@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 import {
   type BandCount,
   type BandRole,
@@ -20,8 +20,12 @@ import {
   nearestStandard,
   parseResistance,
 } from "@/lib/resistor";
+import { decodeSmdCode } from "@/lib/smd";
+import { type SmdMode, SmdChip, SmdPanel } from "./smd-panel";
+import { Segmented, Stat } from "./ui";
 
 type Mode = "colors" | "value";
+type Tab = "bands" | "smd";
 
 const DEFAULT_TEMPCO: ColorName = "brown";
 
@@ -47,6 +51,10 @@ export default function Home() {
   const [mode, setMode] = useState<Mode>("colors");
   const [activeBand, setActiveBand] = useState(0);
   const [valueInput, setValueInput] = useState("4.7k");
+  const [tab, setTab] = useState<Tab>("bands");
+  const [smdMode, setSmdMode] = useState<SmdMode>("code");
+  const [smdCode, setSmdCode] = useState("103");
+  const [smdValue, setSmdValue] = useState("10k");
 
   const specs = getBandSpecs(count);
   const result = useMemo(() => calculateFromColors(bands, count), [bands, count]);
@@ -93,94 +101,138 @@ export default function Home() {
     setMode(next);
   }
 
+  const smdDecoded = decodeSmdCode(smdCode);
+  const smdValueOhms = parseResistance(smdValue);
+  let header: { visual: ReactNode; value: string; tolerance: string | null };
+  if (tab === "bands") {
+    header = {
+      visual: <ResistorSvg bands={bands} count={count} activeBand={-1} compact />,
+      value: formatOhms(result.ohms),
+      tolerance: formatTolerance(result.tolerance),
+    };
+  } else if (smdMode === "code") {
+    header = {
+      visual: <SmdChip code={smdCode.trim().toUpperCase()} compact />,
+      value: smdDecoded.ok ? formatOhms(smdDecoded.ohms) : "—",
+      tolerance: smdDecoded.ok && smdDecoded.tolerance !== null ? formatTolerance(smdDecoded.tolerance) : null,
+    };
+  } else {
+    const ok = Number.isFinite(smdValueOhms) && smdValueOhms >= 0;
+    header = { visual: <SmdChip code="Ω" compact />, value: ok ? formatOhms(smdValueOhms) : "—", tolerance: null };
+  }
+
   return (
     <div className="mx-auto flex w-full max-w-xl flex-1 flex-col">
-      <StickyResult ohms={result.ohms} tolerance={result.tolerance} bands={bands} count={count} />
+      <StickyResult {...header} />
 
       <main className="flex flex-col gap-4 px-4 pt-4 pb-[calc(2rem+env(safe-area-inset-bottom))]">
         <Segmented
-          label="Number of bands"
-          value={count}
+          label="Resistor type"
+          value={tab}
           options={[
-            { value: 4, label: "4 Band" },
-            { value: 5, label: "5 Band" },
-            { value: 6, label: "6 Band" },
+            { value: "bands", label: "Color Bands" },
+            { value: "smd", label: "SMD Code" },
           ]}
-          onChange={changeCount}
+          onChange={setTab}
         />
 
-        <section className="rounded-3xl border border-border bg-surface p-4">
-          <ResistorSvg bands={bands} count={count} activeBand={mode === "colors" ? activeBand : -1} onBandClick={(i) => {
-            setMode("colors");
-            setActiveBand(i);
-          }} />
-          <div className="mt-2 flex justify-center gap-1.5 text-[11px] text-muted">
-            {specs.map((s, i) => (
-              <span key={i} className="flex items-center gap-1">
-                <span className="inline-block h-2.5 w-2.5 rounded-full border border-border" style={{ background: COLORS[bands[i]].hex }} />
-                {COLORS[bands[i]].label}
-              </span>
-            ))}
-          </div>
-        </section>
+        {tab === "smd" ? (
+          <SmdPanel
+            mode={smdMode}
+            onMode={setSmdMode}
+            code={smdCode}
+            onCode={setSmdCode}
+            valueInput={smdValue}
+            onValueInput={setSmdValue}
+            decoded={smdDecoded}
+          />
+        ) : (
+          <>
+          <Segmented
+            label="Number of bands"
+            value={count}
+            options={[
+              { value: 4, label: "4 Band" },
+              { value: 5, label: "5 Band" },
+              { value: 6, label: "6 Band" },
+            ]}
+            onChange={changeCount}
+          />
 
-        <ResultCard result={result} />
-
-        <Segmented
-          label="Calculator mode"
-          value={mode}
-          options={[
-            { value: "colors", label: "Colors → Value" },
-            { value: "value", label: "Value → Colors" },
-          ]}
-          onChange={switchMode}
-        />
-
-        {mode === "colors" ? (
           <section className="rounded-3xl border border-border bg-surface p-4">
-            <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1" role="tablist" aria-label="Bands">
+            <ResistorSvg bands={bands} count={count} activeBand={mode === "colors" ? activeBand : -1} onBandClick={(i) => {
+              setMode("colors");
+              setActiveBand(i);
+            }} />
+            <div className="mt-2 flex justify-center gap-1.5 text-[11px] text-muted">
               {specs.map((s, i) => (
-                <button
-                  key={i}
-                  role="tab"
-                  aria-selected={activeBand === i}
-                  onClick={() => setActiveBand(i)}
-                  className={`flex min-h-14 shrink-0 flex-col items-start justify-center rounded-2xl border px-3 py-2 text-left transition ${
-                    activeBand === i ? "border-accent bg-surface-2 ring-2 ring-accent/40" : "border-border bg-surface"
-                  }`}
-                >
-                  <span className="text-[11px] font-medium uppercase tracking-wide text-muted">{s.label}</span>
-                  <span className="flex items-center gap-1.5 text-sm font-semibold">
-                    <Swatch color={bands[i]} className="h-3.5 w-3.5" />
-                    {COLORS[bands[i]].label}
-                  </span>
-                </button>
+                <span key={i} className="flex items-center gap-1">
+                  <span className="inline-block h-2.5 w-2.5 rounded-full border border-border" style={{ background: COLORS[bands[i]].hex }} />
+                  {COLORS[bands[i]].label}
+                </span>
               ))}
             </div>
-            <ColorPalette
-              role={specs[activeBand].role}
-              selected={bands[activeBand]}
-              onSelect={(c) => setBand(activeBand, c)}
-            />
           </section>
-        ) : (
-          <ValueInputPanel
-            count={count}
-            valueInput={valueInput}
-            onValueInput={changeValueInput}
-            fromValue={fromValue}
-            parsed={parsed}
-            tolerance={tolerance}
-            tempCoef={tcIndex >= 0 ? tempCoef : null}
-            onTolerance={(c) => setBands((prev) => prev.map((b, i) => (i === tolIndex ? c : b)))}
-            onTempCoef={(c) => setBands((prev) => prev.map((b, i) => (i === tcIndex ? c : b)))}
-            onApply={applyValue}
+
+          <ResultCard result={result} />
+
+          <Segmented
+            label="Calculator mode"
+            value={mode}
+            options={[
+              { value: "colors", label: "Colors → Value" },
+              { value: "value", label: "Value → Colors" },
+            ]}
+            onChange={switchMode}
           />
+
+          {mode === "colors" ? (
+            <section className="rounded-3xl border border-border bg-surface p-4">
+              <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1" role="tablist" aria-label="Bands">
+                {specs.map((s, i) => (
+                  <button
+                    key={i}
+                    role="tab"
+                    aria-selected={activeBand === i}
+                    onClick={() => setActiveBand(i)}
+                    className={`flex min-h-14 shrink-0 flex-col items-start justify-center rounded-2xl border px-3 py-2 text-left transition ${
+                      activeBand === i ? "border-accent bg-surface-2 ring-2 ring-accent/40" : "border-border bg-surface"
+                    }`}
+                  >
+                    <span className="text-[11px] font-medium uppercase tracking-wide text-muted">{s.label}</span>
+                    <span className="flex items-center gap-1.5 text-sm font-semibold">
+                      <Swatch color={bands[i]} className="h-3.5 w-3.5" />
+                      {COLORS[bands[i]].label}
+                    </span>
+                  </button>
+                ))}
+              </div>
+              <ColorPalette
+                role={specs[activeBand].role}
+                selected={bands[activeBand]}
+                onSelect={(c) => setBand(activeBand, c)}
+              />
+            </section>
+          ) : (
+            <ValueInputPanel
+              count={count}
+              valueInput={valueInput}
+              onValueInput={changeValueInput}
+              fromValue={fromValue}
+              parsed={parsed}
+              tolerance={tolerance}
+              tempCoef={tcIndex >= 0 ? tempCoef : null}
+              onTolerance={(c) => setBands((prev) => prev.map((b, i) => (i === tolIndex ? c : b)))}
+              onTempCoef={(c) => setBands((prev) => prev.map((b, i) => (i === tcIndex ? c : b)))}
+              onApply={applyValue}
+            />
+          )}
+
+          <ESeriesPanel ohms={result.ohms} onPick={(v) => applyValue(v)} />
+
+          <ReferenceChart />
+          </>
         )}
-
-        <ESeriesPanel ohms={result.ohms} onPick={(v) => applyValue(v)} />
-
-        <ReferenceChart />
 
         <footer className="pt-2 text-center text-xs text-muted">
           Tip: add this page to your home screen for a full-screen app.
@@ -192,51 +244,21 @@ export default function Home() {
 
 /* ------------------------------------------------------------------ */
 
-function StickyResult({ ohms, tolerance, bands, count }: { ohms: number; tolerance: number; bands: ColorName[]; count: BandCount }) {
+function StickyResult({ visual, value, tolerance }: { visual: ReactNode; value: string; tolerance: string | null }) {
   return (
     <header className="pt-safe sticky top-0 z-20 border-b border-border bg-bg/85 backdrop-blur-md">
       <div className="flex items-center gap-3 px-4 py-3">
         <div className="w-20 shrink-0" aria-hidden>
-          <ResistorSvg bands={bands} count={count} activeBand={-1} compact />
+          {visual}
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-[11px] font-medium uppercase tracking-widest text-muted">Resistance</p>
           <p className="truncate text-2xl font-bold tabular-nums" aria-live="polite">
-            {formatOhms(ohms)} <span className="text-base font-semibold text-accent">{formatTolerance(tolerance)}</span>
+            {value} {tolerance && <span className="text-base font-semibold text-accent">{tolerance}</span>}
           </p>
         </div>
       </div>
     </header>
-  );
-}
-
-function Segmented<T extends string | number>({
-  label,
-  value,
-  options,
-  onChange,
-}: {
-  label: string;
-  value: T;
-  options: { value: T; label: string }[];
-  onChange: (v: T) => void;
-}) {
-  return (
-    <div role="radiogroup" aria-label={label} className="grid auto-cols-fr grid-flow-col gap-1 rounded-2xl border border-border bg-surface p-1">
-      {options.map((o) => (
-        <button
-          key={String(o.value)}
-          role="radio"
-          aria-checked={value === o.value}
-          onClick={() => onChange(o.value)}
-          className={`min-h-12 rounded-xl px-2 text-sm font-semibold transition active:scale-[0.98] ${
-            value === o.value ? "bg-accent text-accent-fg shadow" : "text-muted hover:text-fg"
-          }`}
-        >
-          {o.label}
-        </button>
-      ))}
-    </div>
   );
 }
 
@@ -340,15 +362,6 @@ function SeriesBadge({ name, on }: { name: string; on: boolean }) {
     >
       {name}
     </span>
-  );
-}
-
-function Stat({ label, value, wide }: { label: string; value: string; wide?: boolean }) {
-  return (
-    <div className={`rounded-2xl bg-surface-2 px-3 py-2 ${wide ? "col-span-2" : ""}`}>
-      <dt className="text-[11px] uppercase tracking-wide text-muted">{label}</dt>
-      <dd className="text-lg font-semibold tabular-nums">{value}</dd>
-    </div>
   );
 }
 
