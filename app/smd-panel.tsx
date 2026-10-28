@@ -10,7 +10,7 @@ import {
   type SmdEncoding,
   getSmdCodes,
 } from "@/lib/smd";
-import { Segmented, Stat } from "./ui";
+import { FieldLabel, Segmented, Stat, TextField } from "./ui";
 
 export type SmdMode = "code" | "value";
 
@@ -98,19 +98,22 @@ function CodeToValue({ code, onCode, decoded }: { code: string; onCode: (c: stri
         <div className="mx-auto max-w-64">
           <SmdChip code={code.trim().toUpperCase()} />
         </div>
-        <label className="mt-4 flex flex-col gap-1.5">
-          <span className="text-xs font-medium uppercase tracking-widest text-muted">Code printed on the resistor</span>
-          <input
+        <div className="mt-4">
+          <TextField
+            label="Code printed on the resistor"
+            mono
             value={code}
             onChange={(e) => onCode(e.target.value.toUpperCase().slice(0, 6))}
             autoCapitalize="characters"
             autoCorrect="off"
             spellCheck={false}
             placeholder="e.g. 103, 4R7, 01C"
-            className="min-h-14 w-full rounded-2xl border border-border bg-surface-2 px-4 font-mono text-2xl font-semibold tracking-widest outline-none placeholder:font-sans placeholder:text-base placeholder:font-normal placeholder:tracking-normal placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-accent/30"
           />
-        </label>
-        <div className="no-scrollbar -mx-1 mt-2 flex gap-2 overflow-x-auto px-1 pb-1">
+        </div>
+        <div className="mt-4 mb-1.5">
+          <FieldLabel text="Or try an example" kind="pick" />
+        </div>
+        <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
           {EXAMPLES.map((ex) => (
             <button
               key={ex}
@@ -183,20 +186,16 @@ function ValueToCode({
   return (
     <>
       <section className="flex flex-col gap-1.5 rounded-3xl border border-border bg-surface p-4">
-        <span className="text-xs font-medium uppercase tracking-widest text-muted">Resistance</span>
-        <div className="flex items-center rounded-2xl border border-border bg-surface-2 focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/30">
-          <input
-            value={valueInput}
-            onChange={(e) => onValueInput(e.target.value)}
-            autoCapitalize="off"
-            autoCorrect="off"
-            spellCheck={false}
-            aria-label="Resistance"
-            placeholder="e.g. 10k, 4.7, 0.1"
-            className="min-h-14 w-full bg-transparent px-4 text-2xl font-semibold tabular-nums outline-none placeholder:text-base placeholder:font-normal placeholder:text-muted"
-          />
-          <span className="pr-4 text-2xl font-semibold text-muted">Ω</span>
-        </div>
+        <TextField
+          label="Resistance"
+          suffix="Ω"
+          value={valueInput}
+          onChange={(e) => onValueInput(e.target.value)}
+          autoCapitalize="off"
+          autoCorrect="off"
+          spellCheck={false}
+          placeholder="e.g. 10k, 4.7, 0.1"
+        />
         <div className="no-scrollbar flex gap-2 overflow-x-auto pt-1">
           {["k", "M"].map((s) => (
             <button

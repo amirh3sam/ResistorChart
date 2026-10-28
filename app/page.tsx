@@ -22,7 +22,7 @@ import {
 } from "@/lib/resistor";
 import { decodeSmdCode } from "@/lib/smd";
 import { type SmdMode, SmdChip, SmdPanel } from "./smd-panel";
-import { Segmented, Stat } from "./ui";
+import { FieldLabel, Segmented, Stat, TextField } from "./ui";
 
 type Mode = "colors" | "value";
 type Tab = "bands" | "smd";
@@ -188,6 +188,9 @@ export default function Home() {
 
           {mode === "colors" ? (
             <section className="rounded-3xl border border-border bg-surface p-4">
+              <div className="mb-2">
+                <FieldLabel text="Choose a band, then its color" kind="pick" />
+              </div>
               <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1" role="tablist" aria-label="Bands">
                 {specs.map((s, i) => (
                   <button
@@ -393,21 +396,18 @@ function ValueInputPanel({
   const e24 = nearestStandard(parsed, E24);
   return (
     <section className="flex flex-col gap-4 rounded-3xl border border-border bg-surface p-4">
-      <label className="flex flex-col gap-1.5">
-        <span className="text-xs font-medium uppercase tracking-widest text-muted">Target resistance</span>
-        <div className="flex items-center rounded-2xl border border-border bg-surface-2 focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/30">
-          <input
-            value={valueInput}
-            onChange={(e) => onValueInput(e.target.value)}
-            inputMode="text"
-            autoCapitalize="off"
-            autoCorrect="off"
-            spellCheck={false}
-            placeholder="e.g. 4700, 4.7k, 4k7, 1M"
-            className="min-h-14 w-full bg-transparent px-4 text-2xl font-semibold tabular-nums outline-none placeholder:text-base placeholder:font-normal placeholder:text-muted"
-          />
-          <span className="pr-4 text-2xl font-semibold text-muted">Ω</span>
-        </div>
+      <div className="flex flex-col gap-1.5">
+        <TextField
+          label="Target resistance"
+          suffix="Ω"
+          value={valueInput}
+          onChange={(e) => onValueInput(e.target.value)}
+          inputMode="text"
+          autoCapitalize="off"
+          autoCorrect="off"
+          spellCheck={false}
+          placeholder="e.g. 4700, 4.7k, 4k7, 1M"
+        />
         <div className="no-scrollbar flex gap-2 overflow-x-auto pt-1">
           {["k", "M", "R"].map((s) => (
             <button
@@ -427,7 +427,7 @@ function ValueInputPanel({
             Clear
           </button>
         </div>
-      </label>
+      </div>
 
       {showError && <p className="text-sm font-medium text-danger">{fromValue.ok ? "" : fromValue.error}</p>}
       {fromValue.ok && !fromValue.exact && (
@@ -458,7 +458,9 @@ function ValueInputPanel({
 function ChipPicker({ label, role, selected, onSelect }: { label: string; role: BandRole; selected: ColorName; onSelect: (c: ColorName) => void }) {
   return (
     <div>
-      <p className="mb-1.5 text-xs font-medium uppercase tracking-widest text-muted">{label}</p>
+      <div className="mb-1.5">
+        <FieldLabel text={label} kind="pick" />
+      </div>
       <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
         {colorsForRole(role).map((c) => (
           <button
