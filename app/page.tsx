@@ -28,7 +28,7 @@ import { type NetworkState, NetworkPanel, networkTotal } from "./network-panel";
 import { ResistorSvg } from "./resistor-svg";
 import { type Mode, type SavedState, type Tab, DEFAULT_STATE, saveState, useSavedState } from "./saved-state";
 import { ThemeToggle } from "./theme-toggle";
-import { FieldLabel, Segmented, Stat, TextField } from "./ui";
+import { BrandBackdrop, BrandMark, FieldLabel, Segmented, Stat, TextField } from "./ui";
 
 const DEFAULT_TEMPCO: ColorName = "brown";
 
@@ -213,7 +213,9 @@ function Calculator({ initial, persist }: { initial: SavedState; persist: boolea
             onChange={changeCount}
           />
 
-          <section className="rounded-3xl border border-border bg-surface p-4">
+          <section className="relative overflow-hidden rounded-3xl border border-border bg-surface p-4">
+            <BrandBackdrop rings={false} />
+            <div className="relative">
             <ResistorSvg bands={bands} count={count} activeBand={mode === "colors" ? activeBand : -1} onBandClick={(i) => {
               setMode("colors");
               setActiveBand(i);
@@ -226,6 +228,7 @@ function Calculator({ initial, persist }: { initial: SavedState; persist: boolea
                 </span>
               ))}
             </div>
+          </div>
           </section>
 
           <ResultCard result={result} />
@@ -256,7 +259,7 @@ function Calculator({ initial, persist }: { initial: SavedState; persist: boolea
                       activeBand === i ? "border-accent bg-surface-2 ring-2 ring-accent/40" : "border-border bg-surface"
                     }`}
                   >
-                    <span className="text-[11px] font-medium uppercase tracking-wide text-muted">{s.label}</span>
+                    <span className="text-[11px] font-medium font-mono uppercase tracking-[0.06em] text-muted">{s.label}</span>
                     <span className="flex items-center gap-1.5 text-sm font-semibold">
                       <Swatch color={bands[i]} className="h-3.5 w-3.5" />
                       {COLORS[bands[i]].label}
@@ -291,19 +294,7 @@ function Calculator({ initial, persist }: { initial: SavedState; persist: boolea
           </>
         )}
 
-        <footer className="flex flex-col gap-1.5 pt-2 text-center text-xs text-muted">
-          <p>
-            Made by{" "}
-            <a href="https://amirhesamtech.com" target="_blank" rel="noopener noreferrer" className="font-semibold text-fg underline underline-offset-4">
-              AmirHesam Tech
-            </a>
-            {" · "}
-            <a href="https://www.tiktok.com/@techwithamirh3sam" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">
-              @techwithamirh3sam
-            </a>
-          </p>
-          <p>Tip: add this page to your home screen for a full-screen app.</p>
-        </footer>
+        <BrandFooter />
       </main>
     </div>
   );
@@ -313,14 +304,15 @@ function Calculator({ initial, persist }: { initial: SavedState; persist: boolea
 
 function StickyResult({ visual, value, tolerance }: { visual: ReactNode; value: string; tolerance: string | null }) {
   return (
-    <header className="pt-safe sticky top-0 z-20 border-b border-border bg-bg/85 backdrop-blur-md">
+    <header className="pt-safe sticky top-0 z-20 bg-bg/85 backdrop-blur-md">
       <div className="flex items-center gap-3 px-4 py-3">
         <div className="w-20 shrink-0" aria-hidden>
           {visual}
         </div>
         <div className="min-w-0 flex-1">
-          <h1 className="text-[11px] font-medium uppercase tracking-widest text-muted">
-            <span className="sr-only">Resistor Calculator </span>by AmirHesam Tech
+          <h1>
+            <span className="sr-only">Resistor Calculator by </span>
+            <BrandMark />
           </h1>
           <p className="truncate text-2xl font-bold tabular-nums" aria-live="polite">
             {value} {tolerance && <span className="text-base font-semibold text-accent">{tolerance}</span>}
@@ -328,6 +320,7 @@ function StickyResult({ visual, value, tolerance }: { visual: ReactNode; value: 
         </div>
         <ThemeToggle />
       </div>
+      <div className="brand-rule h-[3px]" aria-hidden />
     </header>
   );
 }
@@ -401,7 +394,7 @@ function ResultCard({ result }: { result: ReturnType<typeof calculateFromColors>
     <section className="rounded-3xl border border-border bg-surface p-4">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-xs font-medium uppercase tracking-widest text-muted">Value</p>
+          <p className="text-xs font-medium font-mono uppercase tracking-[0.08em] text-muted">Value</p>
           <p className="text-4xl font-bold tabular-nums">{formatOhms(result.ohms)}</p>
           <p className="mt-0.5 text-sm text-muted tabular-nums">{result.ohms.toLocaleString("en-US")} Ω</p>
         </div>
@@ -629,7 +622,7 @@ function ReferenceChart() {
       <div className="overflow-x-auto px-2 pb-3">
         <table className="w-full text-sm tabular-nums">
           <thead>
-            <tr className="text-left text-[11px] uppercase tracking-wide text-muted">
+            <tr className="text-left text-[11px] font-mono uppercase tracking-[0.06em] text-muted">
               <th className="px-2 py-2 font-medium">Color</th>
               <th className="px-2 py-2 text-center font-medium">Digit</th>
               <th className="px-2 py-2 font-medium">Multiplier</th>
@@ -700,5 +693,44 @@ function NetworkIcon({ className }: { className?: string }) {
       <rect x="9" y="5" width="6" height="4" rx="1" />
       <rect x="9" y="15" width="6" height="4" rx="1" />
     </svg>
+  );
+}
+
+const LINK = "font-semibold text-fg underline decoration-border underline-offset-4 hover:decoration-accent";
+
+/** Sign-off in the AmirHesam Tech style, matching the README "About" sections. */
+function BrandFooter() {
+  return (
+    <footer className="relative mt-2 overflow-hidden rounded-3xl border border-border bg-surface">
+      <BrandBackdrop />
+      <div className="relative flex flex-col gap-3 p-5 pb-6 text-sm">
+        <div className="flex items-center justify-between gap-2">
+          <BrandMark />
+          <span className="rounded-full border border-accent/50 px-2.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-accent">
+            Tool
+          </span>
+        </div>
+        <p className="text-muted">
+          Made by{" "}
+          <a href="https://amirhesamtech.com" target="_blank" rel="noopener noreferrer" className={LINK}>
+            AmirHesam Tech
+          </a>
+          . More tech content on TikTok:{" "}
+          <a href="https://www.tiktok.com/@techwithamirh3sam" target="_blank" rel="noopener noreferrer" className={LINK}>
+            @techwithamirh3sam
+          </a>
+          .
+        </p>
+        <p className="text-muted">
+          Free and open source.{" "}
+          <a href="https://github.com/amirh3sam/ResistorChart" target="_blank" rel="noopener noreferrer" className={LINK}>
+            Star it on GitHub
+          </a>{" "}
+          if it saved you a trip to the chart.
+        </p>
+        <p className="text-xs text-muted">Tip: add this page to your home screen for a full-screen app that works offline.</p>
+      </div>
+      <div className="brand-rule absolute inset-x-0 bottom-0 h-[3px]" aria-hidden />
+    </footer>
   );
 }

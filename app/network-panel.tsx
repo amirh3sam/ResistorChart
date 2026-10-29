@@ -108,7 +108,7 @@ export function NetworkPanel({
       </section>
 
       <section className="rounded-3xl border border-border bg-surface p-4">
-        <p className="text-xs font-medium uppercase tracking-widest text-muted">Total resistance</p>
+        <p className="text-xs font-medium font-mono uppercase tracking-[0.08em] text-muted">Total resistance</p>
         <p className="text-4xl font-bold tabular-nums">{Number.isFinite(total) ? formatOhms(total) : "—"}</p>
         {Number.isFinite(total) && (
           <>
@@ -145,7 +145,7 @@ export function NetworkPanel({
             <div className="mt-3 overflow-x-auto">
               <table className="w-full text-sm tabular-nums">
                 <thead>
-                  <tr className="text-left text-[11px] uppercase tracking-wide text-muted">
+                  <tr className="text-left text-[11px] font-mono uppercase tracking-[0.06em] text-muted">
                     <th className="py-1.5 pr-2 font-medium" />
                     <th className="py-1.5 pr-2 font-medium">Value</th>
                     <th className="py-1.5 pr-2 font-medium">Voltage</th>
@@ -243,7 +243,7 @@ function CombinationFinder({ state, onChange }: { state: NetworkState; onChange:
         {combos.map((c) => (
           <div key={`${c.mode}${c.a}${c.b}`} className="flex items-center gap-3 rounded-2xl border border-border bg-surface-2 p-3">
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-muted">{c.mode}</p>
+              <p className="text-[11px] font-semibold font-mono uppercase tracking-[0.06em] text-muted">{c.mode}</p>
               <p className="font-semibold tabular-nums">
                 {formatOhms(c.a)} {c.mode === "series" ? "+" : "∥"} {formatOhms(c.b)} = {formatOhms(c.ohms)}
               </p>
