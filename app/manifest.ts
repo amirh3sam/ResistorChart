@@ -4,7 +4,8 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Resistor Color Code Calculator",
     short_name: "Resistor Calc",
-    description: "Resistor color code and value calculator for 4, 5 and 6-band resistors.",
+    description:
+      "Resistor color codes both ways (4, 5 and 6-band), SMD codes, LED resistor and series/parallel calculators. Works offline.",
     id: "/",
     start_url: "/",
     scope: "/",

@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 import {
   type BandCount,
   type BandRole,
@@ -26,11 +26,9 @@ import { type SmdMode, SmdChip, SmdPanel } from "./smd-panel";
 import { type LedState, LedGlyph, LedPanel, ledHex } from "./led-panel";
 import { type NetworkState, NetworkPanel, networkTotal } from "./network-panel";
 import { ResistorSvg } from "./resistor-svg";
+import { type Mode, type SavedState, type Tab, DEFAULT_STATE, saveState, useSavedState } from "./saved-state";
 import { ThemeToggle } from "./theme-toggle";
 import { FieldLabel, Segmented, Stat, TextField } from "./ui";
-
-type Mode = "colors" | "value";
-type Tab = "bands" | "smd" | "led" | "network";
 
 const DEFAULT_TEMPCO: ColorName = "brown";
 
@@ -51,23 +49,30 @@ function bandsFor(ohms: number, count: BandCount, tol: ColorName, tc: ColorName)
 }
 
 export default function Home() {
-  const [count, setCount] = useState<BandCount>(4);
-  const [bands, setBands] = useState<ColorName[]>(["yellow", "violet", "red", "gold"]);
-  const [mode, setMode] = useState<Mode>("colors");
+  const { saved, hydrated } = useSavedState();
+  // Remount with the saved state once it's read, right after hydration.
+  return <Calculator key={saved ? "saved" : "default"} initial={saved ?? DEFAULT_STATE} persist={hydrated} />;
+}
+
+function Calculator({ initial, persist }: { initial: SavedState; persist: boolean }) {
+  const [count, setCount] = useState<BandCount>(initial.count);
+  const [bands, setBands] = useState<ColorName[]>(initial.bands);
+  const [mode, setMode] = useState<Mode>(initial.mode);
   const [activeBand, setActiveBand] = useState(0);
-  const [valueInput, setValueInput] = useState("4.7k");
-  const [tab, setTab] = useState<Tab>("bands");
-  const [network, setNetwork] = useState<NetworkState>({
-    mode: "series",
-    values: ["1k", "2.2k"],
-    voltage: "",
-    target: "",
-    series: "E12",
-  });
-  const [led, setLed] = useState<LedState>({ supply: "5", vf: "2", current: "20", count: 1, series: "E12", color: "Red" });
-  const [smdMode, setSmdMode] = useState<SmdMode>("code");
-  const [smdCode, setSmdCode] = useState("103");
-  const [smdValue, setSmdValue] = useState("10k");
+  const [valueInput, setValueInput] = useState(initial.valueInput);
+  const [tab, setTab] = useState<Tab>(initial.tab);
+  const [network, setNetwork] = useState<NetworkState>(initial.network);
+  const [led, setLed] = useState<LedState>(initial.led);
+  const [smdMode, setSmdMode] = useState<SmdMode>(initial.smdMode);
+  const [smdCode, setSmdCode] = useState(initial.smdCode);
+  const [smdValue, setSmdValue] = useState(initial.smdValue);
+
+  // Skipped during hydration so the defaults never overwrite a saved session.
+  useEffect(() => {
+    if (!persist) return;
+    delete document.documentElement.dataset.restoring;
+    saveState({ tab, count, bands, mode, valueInput, smdMode, smdCode, smdValue, led, network });
+  }, [persist, tab, count, bands, mode, valueInput, smdMode, smdCode, smdValue, led, network]);
 
   const specs = getBandSpecs(count);
   const result = useMemo(() => calculateFromColors(bands, count), [bands, count]);
@@ -163,7 +168,7 @@ export default function Home() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-1 flex-col">
+    <div className="restore-hide mx-auto flex w-full max-w-xl flex-1 flex-col">
       <StickyResult {...header} />
 
       <main className="flex flex-col gap-4 px-4 pt-4 pb-[calc(2rem+env(safe-area-inset-bottom))]">

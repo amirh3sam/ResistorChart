@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useSyncExternalStore } from "react";
+import { THEME_KEY } from "@/lib/storage-keys";
 
 type Theme = "light" | "dark";
 
@@ -21,7 +22,7 @@ function setTheme(theme: Theme) {
   root.dataset.theme = theme;
   syncThemeColor();
   try {
-    localStorage.setItem("theme", theme);
+    localStorage.setItem(THEME_KEY, theme);
   } catch {}
   window.dispatchEvent(new Event(EVENT));
   window.setTimeout(() => root.classList.remove("theme-transition"), 250);
