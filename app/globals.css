@@ -95,9 +95,12 @@ body {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+/* In the base layer so utilities (e.g. TextField's focus-visible:outline-none) can override it. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
 }
 
 /* Smooth color change when the theme is toggled. */

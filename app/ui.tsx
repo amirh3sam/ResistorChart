@@ -13,19 +13,23 @@ export function Segmented<T extends string | number>({
   options,
   onChange,
   variant = "secondary",
+  columns,
 }: {
   label: string;
   value: T;
   options: { value: T; label: ReactNode }[];
   onChange: (v: T) => void;
   variant?: "primary" | "secondary";
+  /** Wrap options into this many columns instead of one row. */
+  columns?: number;
 }) {
   const primary = variant === "primary";
   return (
     <div
       role="radiogroup"
       aria-label={label}
-      className={`grid auto-cols-fr grid-flow-col gap-1 border border-border p-1 ${
+      style={columns ? { gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` } : undefined}
+      className={`grid gap-1 border border-border p-1 ${columns ? "" : "auto-cols-fr grid-flow-col"} ${
         primary ? "rounded-2xl bg-surface" : "rounded-xl bg-surface-2/60"
       }`}
     >
@@ -84,26 +88,34 @@ export function FieldLabel({ text, kind }: { text: ReactNode; kind: "type" | "pi
   );
 }
 
-/** Large, sunken text input that is clearly something you type into. */
+/**
+ * Large, sunken text input that is clearly something you type into.
+ * `compact` is for rows in a list: the label sits inside the box instead of above it.
+ */
 export function TextField({
   label,
   suffix,
   mono,
+  compact,
   className = "",
   ...inputProps
-}: { label: ReactNode; suffix?: ReactNode; mono?: boolean } & InputHTMLAttributes<HTMLInputElement>) {
+}: { label: ReactNode; suffix?: ReactNode; mono?: boolean; compact?: boolean } & InputHTMLAttributes<HTMLInputElement>) {
   return (
-    <label className="flex flex-col gap-1.5">
-      <FieldLabel text={label} kind="type" />
+    <label className={`flex flex-col gap-1.5 ${compact ? "min-w-0 flex-1" : ""}`}>
+      {!compact && <FieldLabel text={label} kind="type" />}
       <div className="flex cursor-text items-center rounded-2xl border-2 border-accent/60 bg-field shadow-(--field-shadow) transition focus-within:border-accent focus-within:ring-4 focus-within:ring-accent/25">
-        <PencilIcon className="ml-4 h-5 w-5 shrink-0 text-accent" />
+        {compact ? (
+          <span className="pl-4 text-sm font-bold text-accent">{label}</span>
+        ) : (
+          <PencilIcon className="ml-4 h-5 w-5 shrink-0 text-accent" />
+        )}
         <input
           {...inputProps}
-          className={`min-h-16 w-full min-w-0 bg-transparent px-3 text-2xl font-semibold caret-accent outline-none placeholder:font-sans placeholder:text-base placeholder:font-normal placeholder:tracking-normal placeholder:text-muted ${
-            mono ? "font-mono tracking-widest" : "tabular-nums"
-          } ${className}`}
+          className={`w-full min-w-0 bg-transparent px-3 font-semibold caret-accent outline-none focus-visible:outline-none placeholder:font-sans placeholder:text-base placeholder:font-normal placeholder:tracking-normal placeholder:text-muted ${
+            compact ? "min-h-12 text-xl" : "min-h-16 text-2xl"
+          } ${mono ? "font-mono tracking-widest" : "tabular-nums"} ${className}`}
         />
-        {suffix && <span className="pr-4 text-2xl font-semibold text-muted">{suffix}</span>}
+        {suffix && <span className={`pr-4 font-semibold text-muted ${compact ? "text-xl" : "text-2xl"}`}>{suffix}</span>}
       </div>
     </label>
   );
