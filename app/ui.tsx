@@ -47,10 +47,11 @@ export function Segmented<T extends string | number>({
               on
                 ? primary
                   ? "bg-accent text-accent-fg shadow"
-                  : "bg-surface text-fg shadow ring-1 ring-border"
+                  : "bg-accent/15 text-fg shadow ring-2 ring-accent"
                 : "text-muted hover:text-fg"
             }`}
           >
+            {on && !primary && <CheckIcon className="h-4 w-4 shrink-0 text-accent" />}
             {o.label}
           </button>
         );
@@ -144,6 +145,14 @@ function TapIcon({ className }: { className?: string }) {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
       <path d="M9 11V5a2 2 0 0 1 4 0v5" />
       <path d="M13 10a2 2 0 0 1 4 0v1a2 2 0 0 1 4 0v4a7 7 0 0 1-7 7h-1a7 7 0 0 1-5.6-2.8L4.6 16a2 2 0 0 1 3.2-2.4L9 15" />
+    </svg>
+  );
+}
+
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <path d="M5 12.5 10 17 19 7" />
     </svg>
   );
 }
