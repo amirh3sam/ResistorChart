@@ -24,12 +24,13 @@ import { calculateLed, formatRating } from "@/lib/led";
 import { decodeSmdCode } from "@/lib/smd";
 import { type SmdMode, SmdChip, SmdPanel } from "./smd-panel";
 import { type LedState, LedGlyph, LedPanel, ledHex } from "./led-panel";
+import { type NetworkState, NetworkPanel, networkTotal } from "./network-panel";
 import { ResistorSvg } from "./resistor-svg";
 import { ThemeToggle } from "./theme-toggle";
 import { FieldLabel, Segmented, Stat, TextField } from "./ui";
 
 type Mode = "colors" | "value";
-type Tab = "bands" | "smd" | "led";
+type Tab = "bands" | "smd" | "led" | "network";
 
 const DEFAULT_TEMPCO: ColorName = "brown";
 
@@ -56,6 +57,13 @@ export default function Home() {
   const [activeBand, setActiveBand] = useState(0);
   const [valueInput, setValueInput] = useState("4.7k");
   const [tab, setTab] = useState<Tab>("bands");
+  const [network, setNetwork] = useState<NetworkState>({
+    mode: "series",
+    values: ["1k", "2.2k"],
+    voltage: "",
+    target: "",
+    series: "E12",
+  });
   const [led, setLed] = useState<LedState>({ supply: "5", vf: "2", current: "20", count: 1, series: "E12", color: "Red" });
   const [smdMode, setSmdMode] = useState<SmdMode>("code");
   const [smdCode, setSmdCode] = useState("103");
@@ -124,7 +132,14 @@ export default function Home() {
   });
 
   let header: { visual: ReactNode; value: string; tolerance: string | null };
-  if (tab === "led") {
+  if (tab === "network") {
+    const total = networkTotal(network);
+    header = {
+      visual: <NetworkIcon className="h-10 w-full text-accent" />,
+      value: Number.isFinite(total) ? formatOhms(total) : "—",
+      tolerance: network.mode === "series" ? "series" : "parallel",
+    };
+  } else if (tab === "led") {
     header = {
       visual: <LedGlyph hex={ledHex(led)} />,
       value: ledResult.ok ? formatOhms(ledResult.ohms) : "—",
@@ -155,16 +170,20 @@ export default function Home() {
         <Segmented
           label="Resistor type"
           variant="primary"
+          columns={2}
           value={tab}
           options={[
-            { value: "bands", label: <><BandsIcon />Bands</> },
-            { value: "smd", label: <><ChipIcon />SMD</> },
-            { value: "led", label: <><LedIcon />LED</> },
+            { value: "bands", label: <><BandsIcon />Color Bands</> },
+            { value: "smd", label: <><ChipIcon />SMD Code</> },
+            { value: "led", label: <><LedIcon />LED Resistor</> },
+            { value: "network", label: <><NetworkIcon className="h-4 w-4" />Series / Parallel</> },
           ]}
           onChange={setTab}
         />
 
-        {tab === "led" ? (
+        {tab === "network" ? (
+          <NetworkPanel state={network} onChange={(patch) => setNetwork((s) => ({ ...s, ...patch }))} onOpenInBands={openInBands} />
+        ) : tab === "led" ? (
           <LedPanel state={led} onChange={(patch) => setLed((s) => ({ ...s, ...patch }))} result={ledResult} onOpenInBands={openInBands} />
         ) : tab === "smd" ? (
           <SmdPanel
@@ -653,6 +672,16 @@ function LedIcon() {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden>
       <path d="M8 20v-9a4 4 0 0 1 8 0v9M6 20h12M10 20v3M14 20v3" />
       <path d="M4 6 2.5 4.5M20 6l1.5-1.5M12 3V1" />
+    </svg>
+  );
+}
+
+function NetworkIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <path d="M2 12h3M19 12h3M5 7v10M19 7v10M5 7h4M15 7h4M5 17h4M15 17h4" />
+      <rect x="9" y="5" width="6" height="4" rx="1" />
+      <rect x="9" y="15" width="6" height="4" rx="1" />
     </svg>
   );
 }

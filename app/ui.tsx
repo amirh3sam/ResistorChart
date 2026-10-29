@@ -13,19 +13,23 @@ export function Segmented<T extends string | number>({
   options,
   onChange,
   variant = "secondary",
+  columns,
 }: {
   label: string;
   value: T;
   options: { value: T; label: ReactNode }[];
   onChange: (v: T) => void;
   variant?: "primary" | "secondary";
+  /** Wrap options into this many columns instead of one row. */
+  columns?: number;
 }) {
   const primary = variant === "primary";
   return (
     <div
       role="radiogroup"
       aria-label={label}
-      className={`grid auto-cols-fr grid-flow-col gap-1 border border-border p-1 ${
+      style={columns ? { gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` } : undefined}
+      className={`grid gap-1 border border-border p-1 ${columns ? "" : "auto-cols-fr grid-flow-col"} ${
         primary ? "rounded-2xl bg-surface" : "rounded-xl bg-surface-2/60"
       }`}
     >
@@ -43,10 +47,11 @@ export function Segmented<T extends string | number>({
               on
                 ? primary
                   ? "bg-accent text-accent-fg shadow"
-                  : "bg-surface text-fg shadow ring-1 ring-border"
+                  : "bg-accent/15 text-fg shadow ring-2 ring-accent"
                 : "text-muted hover:text-fg"
             }`}
           >
+            {on && !primary && <CheckIcon className="h-4 w-4 shrink-0 text-accent" />}
             {o.label}
           </button>
         );
@@ -84,26 +89,34 @@ export function FieldLabel({ text, kind }: { text: ReactNode; kind: "type" | "pi
   );
 }
 
-/** Large, sunken text input that is clearly something you type into. */
+/**
+ * Large, sunken text input that is clearly something you type into.
+ * `compact` is for rows in a list: the label sits inside the box instead of above it.
+ */
 export function TextField({
   label,
   suffix,
   mono,
+  compact,
   className = "",
   ...inputProps
-}: { label: ReactNode; suffix?: ReactNode; mono?: boolean } & InputHTMLAttributes<HTMLInputElement>) {
+}: { label: ReactNode; suffix?: ReactNode; mono?: boolean; compact?: boolean } & InputHTMLAttributes<HTMLInputElement>) {
   return (
-    <label className="flex flex-col gap-1.5">
-      <FieldLabel text={label} kind="type" />
+    <label className={`flex flex-col gap-1.5 ${compact ? "min-w-0 flex-1" : ""}`}>
+      {!compact && <FieldLabel text={label} kind="type" />}
       <div className="flex cursor-text items-center rounded-2xl border-2 border-accent/60 bg-field shadow-(--field-shadow) transition focus-within:border-accent focus-within:ring-4 focus-within:ring-accent/25">
-        <PencilIcon className="ml-4 h-5 w-5 shrink-0 text-accent" />
+        {compact ? (
+          <span className="pl-4 text-sm font-bold text-accent">{label}</span>
+        ) : (
+          <PencilIcon className="ml-4 h-5 w-5 shrink-0 text-accent" />
+        )}
         <input
           {...inputProps}
-          className={`min-h-16 w-full min-w-0 bg-transparent px-3 text-2xl font-semibold caret-accent outline-none placeholder:font-sans placeholder:text-base placeholder:font-normal placeholder:tracking-normal placeholder:text-muted ${
-            mono ? "font-mono tracking-widest" : "tabular-nums"
-          } ${className}`}
+          className={`w-full min-w-0 bg-transparent px-3 font-semibold caret-accent outline-none focus-visible:outline-none placeholder:font-sans placeholder:text-base placeholder:font-normal placeholder:tracking-normal placeholder:text-muted ${
+            compact ? "min-h-12 text-xl" : "min-h-16 text-2xl"
+          } ${mono ? "font-mono tracking-widest" : "tabular-nums"} ${className}`}
         />
-        {suffix && <span className="pr-4 text-2xl font-semibold text-muted">{suffix}</span>}
+        {suffix && <span className={`pr-4 font-semibold text-muted ${compact ? "text-xl" : "text-2xl"}`}>{suffix}</span>}
       </div>
     </label>
   );
@@ -132,6 +145,14 @@ function TapIcon({ className }: { className?: string }) {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
       <path d="M9 11V5a2 2 0 0 1 4 0v5" />
       <path d="M13 10a2 2 0 0 1 4 0v1a2 2 0 0 1 4 0v4a7 7 0 0 1-7 7h-1a7 7 0 0 1-5.6-2.8L4.6 16a2 2 0 0 1 3.2-2.4L9 15" />
+    </svg>
+  );
+}
+
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
+      <path d="M5 12.5 10 17 19 7" />
     </svg>
   );
 }
