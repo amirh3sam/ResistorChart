@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { STATE_KEY, THEME_KEY } from "@/lib/storage-keys";
 import ServiceWorker from "./service-worker";
 import "./globals.css";
 
@@ -16,7 +17,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Resistor Color Code Calculator",
   description:
-    "Decode 4, 5 and 6-band resistor color codes, find the colors for any resistance, and look up standard E12/E24 values.",
+    "Resistor color codes both ways (4, 5 and 6-band), SMD codes, LED resistor and series/parallel calculators. Works offline.",
   applicationName: "Resistor Calc",
   appleWebApp: {
     capable: true,
@@ -37,7 +38,10 @@ export const viewport: Viewport = {
 };
 
 // Runs before first paint so the saved (or OS) theme applies without a flash.
-const themeScript = `(function(){try{var t=localStorage.getItem("theme");if(t!=="light"&&t!=="dark")t=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";document.documentElement.dataset.theme=t;var c=t==="light"?"#f3f4f7":"#0b0d12";document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){m.setAttribute("content",c)})}catch(e){}})();`;
+// If a previous session was saved, it also hides the calculator until the
+// client restores it (see saved-state.ts), so the defaults never flash; the
+// timeout is a safety net in case scripts fail to load.
+const themeScript = `(function(){try{var d=document.documentElement;if(localStorage.getItem(${JSON.stringify(STATE_KEY)})){d.dataset.restoring="";setTimeout(function(){delete d.dataset.restoring},1500)}var t=localStorage.getItem(${JSON.stringify(THEME_KEY)});if(t!=="light"&&t!=="dark")t=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";document.documentElement.dataset.theme=t;var c=t==="light"?"#f3f4f7":"#0b0d12";document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){m.setAttribute("content",c)})}catch(e){}})();`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

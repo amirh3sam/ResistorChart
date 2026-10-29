@@ -108,3 +108,8 @@ body {
 .theme-transition * {
   transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease !important;
 }
+
+/* Hidden for the moment between first paint and restoring the last session. */
+[data-restoring] .restore-hide {
+  visibility: hidden;
+}
