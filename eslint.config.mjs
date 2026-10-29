@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Native iOS project, including the web build Capacitor copies into it.
+    "ios/**",
   ]),
 ]);
 

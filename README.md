@@ -11,6 +11,7 @@
   <a href="#what-it-does">What it does</a> ·
   <a href="#both-directions">Both directions</a> ·
   <a href="#development">Development</a> ·
+  <a href="#iphone-app">iPhone app</a> ·
   <a href="#faq">FAQ</a>
 </p>
 
@@ -74,10 +75,40 @@ app/
 ├── smd-panel.tsx      surface-mount codes
 ├── led-panel.tsx      LED reference
 ├── service-worker.tsx offline support
-└── manifest.ts        home-screen install
+└── manifest.webmanifest home-screen install
+ios/                   native iPhone app (Capacitor)
+capacitor.config.ts    app id, name and where the web build lives
 ```
 
 Deploy with `npx vercel --prod`.
+
+## iPhone app
+
+The same calculator also builds as a native iPhone app with [Capacitor](https://capacitorjs.com). The whole site is exported as static files and bundled inside the app, so it opens instantly and needs no connection at all.
+
+You need a **Mac with Xcode** (free from the App Store) and an iPhone with a cable. A free Apple ID is enough to put it on your own phone.
+
+```bash
+npm install
+npm run ios:build   # static export into out/, then copy it into ios/
+npm run ios:open    # opens the project in Xcode
+```
+
+Then, in Xcode:
+
+1. Select the **App** target → **Signing & Capabilities**, tick **Automatically manage signing**, and choose your Apple ID under **Team** (add it in Xcode → Settings → Accounts if it is not listed). If Xcode says the bundle identifier is taken, change `com.amirhesamtech.resistorcalc` to something unique.
+2. Plug in the iPhone, unlock it and tap **Trust**. Pick it from the device menu at the top of the Xcode window.
+3. Press **Run** (▶).
+
+The first time, the iPhone will refuse to open it until you allow two things:
+
+- **Developer Mode** — Settings → Privacy & Security → Developer Mode, then restart when asked.
+- **Your certificate** — Settings → General → VPN & Device Management → your Apple ID → Trust.
+
+> [!NOTE]
+> With a free Apple ID the app stops opening after **7 days**. Plug the phone back in and press Run again to renew it. A paid Apple Developer account ($99 a year) removes the limit and unlocks TestFlight and the App Store.
+
+After changing the web code, run `npm run ios:build` again before pressing Run, or the app will still show the old version.
 
 ## FAQ
 
@@ -101,6 +132,13 @@ Yes. A service worker caches the app on first visit, so after that it loads with
 <summary><b>Can I install it like an app?</b></summary>
 
 Yes. On iPhone, Share → Add to Home Screen. On Android, Chrome offers "Install app". It then opens full screen with no browser chrome.
+
+</details>
+
+<details>
+<summary><b>Is there an iPhone app?</b></summary>
+
+There is an Xcode project in [`ios/`](ios/) that you can build and install yourself — see [iPhone app](#iphone-app). It is not on the App Store. If you would rather not touch Xcode, Safari → Share → Add to Home Screen gives you nearly the same thing.
 
 </details>
 

@@ -1,5 +1,7 @@
 "use client";
 
+import { Capacitor } from "@capacitor/core";
+import { StatusBar, Style } from "@capacitor/status-bar";
 import { useEffect, useSyncExternalStore } from "react";
 
 type Theme = "light" | "dark";
@@ -31,6 +33,10 @@ function setTheme(theme: Theme) {
 function syncThemeColor() {
   const bg = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
   document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute("content", bg));
+  // In the iOS app, keep the clock/battery readable against the in-app theme.
+  if (Capacitor.isNativePlatform()) {
+    StatusBar.setStyle({ style: getTheme() === "light" ? Style.Light : Style.Dark }).catch(() => {});
+  }
 }
 
 export function ThemeToggle() {
