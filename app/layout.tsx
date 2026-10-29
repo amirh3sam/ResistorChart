@@ -19,6 +19,8 @@ export const metadata: Metadata = {
   description:
     "Resistor color codes both ways (4, 5 and 6-band), SMD codes, LED resistor and series/parallel calculators. Works offline.",
   applicationName: "Resistor Calc",
+  authors: [{ name: "AmirHesam Tech", url: "https://amirhesamtech.com" }],
+  creator: "AmirHesam Tech",
   appleWebApp: {
     capable: true,
     title: "Resistor Calc",

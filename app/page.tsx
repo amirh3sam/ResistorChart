@@ -291,8 +291,18 @@ function Calculator({ initial, persist }: { initial: SavedState; persist: boolea
           </>
         )}
 
-        <footer className="pt-2 text-center text-xs text-muted">
-          Tip: add this page to your home screen for a full-screen app.
+        <footer className="flex flex-col gap-1.5 pt-2 text-center text-xs text-muted">
+          <p>
+            Made by{" "}
+            <a href="https://amirhesamtech.com" target="_blank" rel="noopener noreferrer" className="font-semibold text-fg underline underline-offset-4">
+              AmirHesam Tech
+            </a>
+            {" · "}
+            <a href="https://www.tiktok.com/@techwithamirh3sam" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">
+              @techwithamirh3sam
+            </a>
+          </p>
+          <p>Tip: add this page to your home screen for a full-screen app.</p>
         </footer>
       </main>
     </div>
@@ -309,7 +319,9 @@ function StickyResult({ visual, value, tolerance }: { visual: ReactNode; value: 
           {visual}
         </div>
         <div className="min-w-0 flex-1">
-          <h1 className="text-[11px] font-medium uppercase tracking-widest text-muted">Resistor Calculator</h1>
+          <h1 className="text-[11px] font-medium uppercase tracking-widest text-muted">
+            <span className="sr-only">Resistor Calculator </span>by AmirHesam Tech
+          </h1>
           <p className="truncate text-2xl font-bold tabular-nums" aria-live="polite">
             {value} {tolerance && <span className="text-base font-semibold text-accent">{tolerance}</span>}
           </p>
