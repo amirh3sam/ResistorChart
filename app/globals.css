@@ -1,20 +1,24 @@
 @import "tailwindcss";
 
 /* Theme: an inline script in layout.tsx sets data-theme="light|dark" before paint,
-   from the saved choice or the OS setting. The media query is the no-JS fallback. */
+   from the saved choice or the OS setting. The media query is the no-JS fallback.
+   Dark is the AmirHesam Tech palette (see assets/banner.svg): ink background,
+   gold accent for this tool, teal and purple as brand highlights. */
 :root,
 :root[data-theme="dark"] {
-  --bg: #0b0d12;
-  --surface: #151922;
-  --surface-2: #1d2230;
-  --border: #2a3142;
-  --fg: #eef1f7;
-  --muted: #9aa3b5;
-  --accent: #f5b72f;
-  --accent-fg: #1a1300;
+  --bg: #0a0e14;
+  --surface: #0f151d;
+  --surface-2: #161e29;
+  --border: #212c3a;
+  --fg: #e8edf2;
+  --muted: #8b97a6;
+  --accent: #f5c451;
+  --accent-fg: #14100a;
+  --teal: #3fe0c5;
+  --purple: #a98bff;
   --danger: #ff7a7a;
   /* Typing fields sit "sunken" so they read differently from tap-to-pick buttons. */
-  --field: #06080c;
+  --field: #05080c;
   --field-shadow: inset 0 2px 8px rgb(0 0 0 / 0.6);
   color-scheme: dark;
 }
@@ -28,6 +32,8 @@
   --muted: #5d6576;
   --accent: #b45309;
   --accent-fg: #ffffff;
+  --teal: #0b7a6c;
+  --purple: #6b4fd8;
   --danger: #c62828;
   --field: #fffdf5;
   --field-shadow: inset 0 2px 6px rgb(0 0 0 / 0.08);
@@ -64,6 +70,8 @@
   --color-accent-fg: var(--accent-fg);
   --color-danger: var(--danger);
   --color-field: var(--field);
+  --color-teal: var(--teal);
+  --color-purple: var(--purple);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -112,4 +120,16 @@ body {
 /* Hidden for the moment between first paint and restoring the last session. */
 [data-restoring] .restore-hide {
   visibility: hidden;
+}
+
+/* AmirHesam Tech brand details, shared with the README banners. */
+.brand-rule {
+  background: linear-gradient(90deg, #3fe0c5 0%, #a98bff 55%, #f5c451 100%);
+}
+
+/* Gold dot grid fading in from the right, as on the banner. */
+.brand-dots {
+  background-image: radial-gradient(circle, rgb(245 196 81 / 0.22) 1.4px, transparent 1.6px);
+  background-size: 22px 22px;
+  mask-image: linear-gradient(to left, #000 0%, rgb(0 0 0 / 0.45) 45%, transparent 75%);
 }

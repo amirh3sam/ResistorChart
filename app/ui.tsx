@@ -63,7 +63,7 @@ export function Segmented<T extends string | number>({
 export function Stat({ label, value, wide }: { label: string; value: string; wide?: boolean }) {
   return (
     <div className={`rounded-2xl bg-surface-2 px-3 py-2 ${wide ? "col-span-2" : ""}`}>
-      <dt className="text-[11px] uppercase tracking-wide text-muted">{label}</dt>
+      <dt className="text-[11px] font-mono uppercase tracking-[0.06em] text-muted">{label}</dt>
       <dd className="text-lg font-semibold tabular-nums">{value}</dd>
     </div>
   );
@@ -73,7 +73,7 @@ export function Stat({ label, value, wide }: { label: string; value: string; wid
 export function FieldLabel({ text, kind }: { text: ReactNode; kind: "type" | "pick" }) {
   return (
     <span className="flex items-center justify-between gap-2">
-      <span className="text-xs font-medium uppercase tracking-widest text-muted">{text}</span>
+      <span className="text-xs font-medium font-mono uppercase tracking-[0.08em] text-muted">{text}</span>
       {kind === "type" ? (
         <span className="flex shrink-0 items-center gap-1 rounded-full bg-accent/15 px-2 py-0.5 text-[11px] font-semibold text-accent">
           <KeyboardIcon className="h-3.5 w-3.5" />
@@ -154,5 +154,43 @@ function CheckIcon({ className }: { className?: string }) {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>
       <path d="M5 12.5 10 17 19 7" />
     </svg>
+  );
+}
+
+/** The AmirHesam Tech wordmark: a teal square and spaced monospace caps, as on the banners. */
+export function BrandMark({ className = "" }: { className?: string }) {
+  return (
+    <span className={`inline-flex items-center gap-2 font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-teal ${className}`}>
+      <span className="h-2 w-2 shrink-0 bg-teal" aria-hidden />
+      AmirHesam Tech
+    </span>
+  );
+}
+
+/**
+ * Banner backdrop: gold dot grid fading in from the right with concentric
+ * gold/purple rings. Place inside a `relative overflow-hidden` container.
+ */
+export function BrandBackdrop({ rings = true }: { rings?: boolean }) {
+  return (
+    <span className="pointer-events-none absolute inset-0" aria-hidden>
+      <span className="brand-dots absolute inset-0" />
+      {rings && (
+        <svg viewBox="0 0 300 300" className="absolute -right-14 top-1/2 h-40 w-40 -translate-y-1/2">
+          {[46, 78, 110, 142].map((r, i) => (
+            <circle
+              key={r}
+              cx="150"
+              cy="150"
+              r={r}
+              fill="none"
+              stroke={i % 2 ? "#a98bff" : "#f5c451"}
+              strokeOpacity={0.32 - i * 0.06}
+              strokeWidth="1.5"
+            />
+          ))}
+        </svg>
+      )}
+    </span>
   );
 }

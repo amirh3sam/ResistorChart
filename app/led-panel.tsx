@@ -181,7 +181,7 @@ function LedResultCard({ result, onOpenInBands }: { result: Extract<LedResult, {
     <section className="rounded-3xl border border-border bg-surface p-4">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-xs font-medium uppercase tracking-widest text-muted">Use a resistor of</p>
+          <p className="text-xs font-medium font-mono uppercase tracking-[0.08em] text-muted">Use a resistor of</p>
           <p className="text-4xl font-bold tabular-nums">{formatOhms(result.ohms)}</p>
           <p className="mt-0.5 text-sm text-muted tabular-nums">Exact: {formatOhms(result.exactOhms)}</p>
         </div>

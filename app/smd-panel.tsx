@@ -132,7 +132,7 @@ function CodeToValue({ code, onCode, decoded }: { code: string; onCode: (c: stri
         <section className="rounded-3xl border border-border bg-surface p-4">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <p className="text-xs font-medium uppercase tracking-widest text-muted">Value</p>
+              <p className="text-xs font-medium font-mono uppercase tracking-[0.08em] text-muted">Value</p>
               <p className="text-4xl font-bold tabular-nums">{formatOhms(decoded.ohms)}</p>
               <p className="mt-0.5 text-sm text-muted tabular-nums">{decoded.ohms.toLocaleString("en-US")} Ω</p>
             </div>
@@ -267,7 +267,7 @@ function CodeCard({
         <SmdChip code={enc?.code ?? "—"} compact />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-xs font-medium uppercase tracking-widest text-muted">{title}</p>
+        <p className="text-xs font-medium font-mono uppercase tracking-[0.08em] text-muted">{title}</p>
         {enc ? (
           <>
             <p className="font-mono text-2xl font-bold tracking-wider">{enc.code}</p>
@@ -316,7 +316,7 @@ function SmdGuide() {
           </span>
         </summary>
         <div className="flex flex-col gap-3 px-4 pb-4">
-          <p className="text-xs font-medium uppercase tracking-widest text-muted">Multiplier letter</p>
+          <p className="text-xs font-medium font-mono uppercase tracking-[0.08em] text-muted">Multiplier letter</p>
           <div className="grid grid-cols-3 gap-2 text-sm sm:grid-cols-5">
             {EIA96_MULTIPLIERS.map((m) => (
               <div key={m.letter} className="rounded-xl bg-surface-2 px-2 py-1.5 text-center">
@@ -328,7 +328,7 @@ function SmdGuide() {
               </div>
             ))}
           </div>
-          <p className="pt-1 text-xs font-medium uppercase tracking-widest text-muted">Code → value</p>
+          <p className="pt-1 text-xs font-medium font-mono uppercase tracking-[0.08em] text-muted">Code → value</p>
           <div className="grid grid-cols-4 gap-1.5 text-sm tabular-nums sm:grid-cols-6">
             {E96.map((v, i) => (
               <div key={v} className="flex justify-between rounded-lg bg-surface-2 px-2 py-1">

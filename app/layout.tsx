@@ -34,7 +34,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#0b0d12" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0e14" },
     { media: "(prefers-color-scheme: light)", color: "#f3f4f7" },
   ],
 };
@@ -43,7 +43,7 @@ export const viewport: Viewport = {
 // If a previous session was saved, it also hides the calculator until the
 // client restores it (see saved-state.ts), so the defaults never flash; the
 // timeout is a safety net in case scripts fail to load.
-const themeScript = `(function(){try{var d=document.documentElement;if(localStorage.getItem(${JSON.stringify(STATE_KEY)})){d.dataset.restoring="";setTimeout(function(){delete d.dataset.restoring},1500)}var t=localStorage.getItem(${JSON.stringify(THEME_KEY)});if(t!=="light"&&t!=="dark")t=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";document.documentElement.dataset.theme=t;var c=t==="light"?"#f3f4f7":"#0b0d12";document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){m.setAttribute("content",c)})}catch(e){}})();`;
+const themeScript = `(function(){try{var d=document.documentElement;if(localStorage.getItem(${JSON.stringify(STATE_KEY)})){d.dataset.restoring="";setTimeout(function(){delete d.dataset.restoring},1500)}var t=localStorage.getItem(${JSON.stringify(THEME_KEY)});if(t!=="light"&&t!=="dark")t=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";document.documentElement.dataset.theme=t;var c=t==="light"?"#f3f4f7":"#0a0e14";document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){m.setAttribute("content",c)})}catch(e){}})();`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
