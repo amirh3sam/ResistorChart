@@ -17,6 +17,7 @@
   <a href="#what-it-does">What it does</a> ·
   <a href="#both-directions">Both directions</a> ·
   <a href="#more-tools">More tools</a> ·
+  <a href="#android-app">Android app</a> ·
   <a href="#development">Development</a> ·
   <a href="#faq">FAQ</a>
 </p>
@@ -103,6 +104,21 @@ The part you will use most is the finder underneath. Ask for a value you do not 
 1234 Ω  →  33 Ω + 1.2 kΩ    (−0.08%)
 ```
 
+## Android app
+
+There is a real Android app too. It is the same calculator, bundled into an APK, so it runs fully offline from the first launch. It is free, with no store and no account.
+
+**[Download the APK](https://github.com/amirh3sam/ResistorChart/releases/latest/download/resistor-calc.apk)**
+
+1. Download it on your phone.
+2. Open it, and allow your browser to install unknown apps if Android asks.
+3. Find **Resistor Calc** in your app drawer.
+
+Updates install over the old version, and your saved values stay put.
+
+> [!NOTE]
+> Android warns you because the app is not from the Play Store. That is normal for an app installed this way. The APK is built by GitHub Actions from this repository, and every build is listed under [Releases](https://github.com/amirh3sam/ResistorChart/releases).
+
 ## Development
 
 Next.js App Router, React and Tailwind.
@@ -136,9 +152,16 @@ The interface is in `app/`:
 | [`app/theme-toggle.tsx`](app/theme-toggle.tsx) | The light and dark switch |
 | [`app/ui.tsx`](app/ui.tsx) | Shared controls: switches, text fields, labels |
 | [`app/service-worker.tsx`](app/service-worker.tsx) | Offline support |
-| [`app/manifest.ts`](app/manifest.ts) | Home screen install |
+| [`app/manifest.webmanifest`](app/manifest.webmanifest) | Home screen install |
 
 Every push to `main` deploys to Vercel on its own. To deploy by hand, run `npx vercel --prod`.
+
+The Android app lives in `android/`. It is a [Capacitor](https://capacitorjs.com) project that wraps a static export of the site. `npm run android:build` builds that export and copies it into the project. On every push to `main`, GitHub Actions builds the APK and publishes it to the `android-latest` release. To build it yourself, you need the Android SDK:
+
+```bash
+npm run android:build
+cd android && ./gradlew assembleDebug
+```
 
 ## FAQ
 
@@ -161,7 +184,9 @@ Yes. A service worker caches the app on first visit, so after that it loads with
 <details>
 <summary><b>Can I install it like an app?</b></summary>
 
-Yes, for free. On iPhone, open it in Safari, then Share → Add to Home Screen. On Android, Chrome offers "Install app". It then opens full screen with no browser bars, and updates itself.
+Yes, for free. On iPhone, open it in Safari, then Share → Add to Home Screen. It then opens full screen with no browser bars, and updates itself.
+
+On Android, Chrome offers "Install app", or you can get the [real Android app](https://github.com/amirh3sam/ResistorChart/releases/latest/download/resistor-calc.apk).
 
 </details>
 
