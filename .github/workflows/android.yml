@@ -1,0 +1,58 @@
+name: Android APK
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - run: npm ci
+
+      - name: Build the static site and copy it into the Android project
+        run: npm run android:build
+
+      - name: Build the APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - run: cp android/app/build/outputs/apk/debug/app-debug.apk resistor-calc.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: resistor-calc-apk
+          path: resistor-calc.apk
+
+      - name: Publish to the android-latest release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete android-latest --yes --cleanup-tag || true
+          gh release create android-latest resistor-calc.apk \
+            --target "$GITHUB_SHA" \
+            --latest \
+            --title "Android app" \
+            --notes "Resistor Calc for Android, built from ${GITHUB_SHA::7}. Download resistor-calc.apk on your phone, open it, and allow your browser to install apps if Android asks. Works offline."

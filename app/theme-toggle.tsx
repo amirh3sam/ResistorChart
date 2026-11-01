@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useSyncExternalStore } from "react";
+import { Capacitor, SystemBars, SystemBarsStyle } from "@capacitor/core";
 import { THEME_KEY } from "@/lib/storage-keys";
 
 type Theme = "light" | "dark";
@@ -32,6 +33,10 @@ function setTheme(theme: Theme) {
 function syncThemeColor() {
   const bg = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
   document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute("content", bg));
+  // In the Android app, keep the clock and battery icons readable against the in-app theme.
+  if (Capacitor.isNativePlatform()) {
+    SystemBars.setStyle({ style: getTheme() === "light" ? SystemBarsStyle.Light : SystemBarsStyle.Dark }).catch(() => {});
+  }
 }
 
 export function ThemeToggle() {
